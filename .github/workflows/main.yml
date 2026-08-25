@@ -21,9 +21,7 @@ jobs:
 
       - name: Clone Kernel Source Rova
         run: |
-          # Ini ngambil repo Thagoo branch rova yang lu pake (Triton-Storm)
-          # Kalo lu punya repo fork sendiri, ganti aja URL-nya
-          git clone --depth=1 -b tr-4.9-rova https://github.com/Thagoo/platform_kernel_xiaomi_msm8937.git kernel-workspace
+          git clone --depth=1 -b tr-4.9-rova https://github.com/Thagoo/platform_kernel_xiaomi_msm8917.git kernel-workspace
 
       - name: Inject KSU-Next
         run: |
