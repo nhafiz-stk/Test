@@ -35,7 +35,7 @@ jobs:
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
           # Defconfig buat rova, pastiin namanya bener (biasanya rova_defconfig atau msm8937_defconfig)
-          make O=out ARCH=arm64 rova_defconfig
+          make O=out ARCH=arm64 msm8937_defconfig
           
           # Gas build pake Clang
           make -j$(nproc --all) O=out ARCH=arm64 \
