@@ -1,17 +1,13 @@
-name: Build Kernel + KSU-Next
+name: Build Kernel Rova + KSU-Next
 
 on:
-  workflow_dispatch: # Mengizinkan tombol "Run workflow" manual di GitHub
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Compile Kernel
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout Workspace
-        uses: actions/checkout@v4
-
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -19,19 +15,20 @@ jobs:
           build-essential zip curl zlib1g-dev libssl-dev bc \
           python3 libfl-dev mkbootimg
 
-      - name: Download Proton-Clang Toolchain
+      - name: Download Toolchain (Proton-Clang)
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
 
-      - name: Clone Kernel Source
+      - name: Clone Kernel Source Rova
         run: |
-          # GANTI URL dan BRANCH di bawah dengan repository kernel kamu!
-          git clone --depth=1 -b nama_branch_kamu https://github.com/username/repo_kernel_kamu.git kernel-workspace
+          # Ini ngambil repo Thagoo branch rova yang lu pake (Triton-Storm)
+          # Kalo lu punya repo fork sendiri, ganti aja URL-nya
+          git clone --depth=1 -b tr-4.9-rova https://github.com/Thagoo/platform_kernel_xiaomi_msm8937.git kernel-workspace
 
       - name: Inject KSU-Next
         run: |
           cd kernel-workspace
-          # Script otomatis untuk integrasi KSU-Next (cek dokumentasi KSU-Next untuk branch yang tepat)
+          # Suntik KSU-Next otomatis
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
       - name: Compile Kernel
@@ -39,18 +36,17 @@ jobs:
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # GANTI 'msm8937_defconfig' DENGAN NAMA DEFCONFIG KERNEL KAMU!
-          make O=out ARCH=arm64 msm8937_defconfig
+          # Defconfig buat rova, pastiin namanya bener (biasanya rova_defconfig atau msm8937_defconfig)
+          make O=out ARCH=arm64 rova_defconfig
           
-          # Proses Build
+          # Gas build pake Clang
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
-      - name: Upload Kernel Artifact
+      - name: Upload Hasil Kernel
         uses: actions/upload-artifact@v4
         with:
-          name: Boot-Image-or-Kernel
-          # Path ini disesuaikan, biasanya di arch/arm64/boot/Image.gz-dtb
-          path: kernel-workspace/out/arch/arm64/boot/Image*
+          name: Kernel-Rova-KSUNext
+          path: kernel-workspace/out/arch/arm64/boot/Image.gz-dtb
