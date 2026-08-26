@@ -17,11 +17,6 @@ jobs:
           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
           gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
 
-      - name: Download Modern GCC Toolchain (AArch64 & ARM32)
-        run: |
-          git clone --depth=1 https://github.com/kuteme/aarch64-linux-android-10.0.git toolchain-64
-          git clone --depth=1 https://github.com/kuteme/arm-linux-androideabi-10.0.git toolchain-32
-
       - name: Clone Clean Kernel Source (crDroid rova)
         run: |
           git clone --depth=1 -b 16.0 https://github.com/crdroidandroid/android_kernel_xiaomi_rova kernel-workspace
@@ -35,23 +30,16 @@ jobs:
         run: |
           cd kernel-workspace
           
-          # Masukin jalur GCC ke PATH
-          export PATH=$GITHUB_WORKSPACE/toolchain-64/bin:$GITHUB_WORKSPACE/toolchain-32/bin:$PATH
-          
-          # Tentukan prefix compiler GCC
-          export CROSS_COMPILE=aarch64-linux-android-
-          export CROSS_COMPILE_ARM32=arm-linux-androideabi-
-          
           # Panggil defconfig vendor msm8937
           make O=out ARCH=arm64 vendor/msm8937_defconfig
           
-          # Setup defconfig otomatis tanpa input interaktif
+          # Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
           
-          # Eksekusi compile murni pakai GCC
+          # Eksekusi compile pakai GCC bawaan Ubuntu (cross-compiler system)
           make -j$(nproc --all) O=out ARCH=arm64 \
-          CROSS_COMPILE=aarch64-linux-android- \
-          CROSS_COMPILE_ARM32=arm-linux-androideabi- \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
           KCFLAGS="-w -Wno-error" \
           KCPPFLAGS="-w -Wno-error"
 
