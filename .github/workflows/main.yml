@@ -34,7 +34,7 @@ jobs:
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          make O=out ARCH=arm64 msm8917_defconfig # (Sesuai nama defconfig lu kemaren ya)
+          make O=out ARCH=arm64 msm8937_defconfig # (Sesuai nama defconfig lu kemaren ya)
           
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
