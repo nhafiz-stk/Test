@@ -41,15 +41,6 @@ jobs:
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
           KCFLAGS="-Wno-error"
-          
-          # Defconfig buat rova, pastiin namanya bener (biasanya rova_defconfig atau msm8937_defconfig)
-          make O=out ARCH=arm64 msm8937_defconfig
-          
-          # Gas build pake Clang
-          make -j$(nproc --all) O=out ARCH=arm64 \
-          CC=clang \
-          CROSS_COMPILE=aarch64-linux-gnu- \
-          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
       - name: Upload Hasil Kernel
         uses: actions/upload-artifact@v4
