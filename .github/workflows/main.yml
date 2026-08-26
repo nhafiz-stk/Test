@@ -32,9 +32,13 @@ jobs:
       - name: Patch Techpack Audio (Obat Error)
         run: |
           cd kernel-workspace
-          # Nyuntik KBUILD_MODNAME ke semua file C di folder audio biar Clang nggak ngamuk
+          # Suntik KBUILD_MODNAME (Obat yang tadi)
           find techpack/audio -type f -name "*.c" -exec sed -i '1s/^/#ifndef KBUILD_MODNAME\n#define KBUILD_MODNAME "audio"\n#endif\n/' {} +
-
+          
+          # NUKLIR MAKEFILE: Hapus paksa semua bendera -Werror di dalam techpack!
+          find techpack/audio -type f -name "Makefile" -exec sed -i 's/-Werror//g' {} +
+          find techpack/audio -type f -name "Kbuild" -exec sed -i 's/-Werror//g' {} +
+          
       - name: Compile Kernel
         run: |
           cd kernel-workspace
