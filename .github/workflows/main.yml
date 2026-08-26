@@ -33,8 +33,9 @@ jobs:
           # Panggil defconfig vendor msm8937
           make O=out ARCH=arm64 vendor/msm8937_defconfig
           
-          # MATIKAN FITUR BPF PRELOAD YANG BIKIN ERROR INI!
-          scripts/config --file out/.config --disable CONFIG_BPF_PRELOAD
+          # Matikan IPA Driver yang rewel di GCC modern!
+          scripts/config --file out/.config --disable CONFIG_QCOM_IPA
+          scripts/config --file out/.config --disable CONFIG_IPAv2
           
           # Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
