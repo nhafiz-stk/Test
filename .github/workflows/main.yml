@@ -30,21 +30,20 @@ jobs:
         run: |
           cd kernel-workspace
           
-          # Panggil defconfig vendor msm8937
+          # 1. Panggil defconfig vendor msm8937
           make O=out ARCH=arm64 vendor/msm8937_defconfig
           
-          # Hapus paksa folder bpf preload
-          rm -rf kernel/bpf/preload
-          
-          # Matikan IPA Driver dan BPF kalau masih iseng nyala
+          # 2. Matikan BPF dan IPA Driver secara total dari config
+          scripts/config --file out/.config --disable CONFIG_BPF_PRELOAD
+          scripts/config --file out/.config --disable CONFIG_BPF
+          scripts/config --file out/.config --disable CONFIG_BPF_SYSCALL
           scripts/config --file out/.config --disable CONFIG_QCOM_IPA
           scripts/config --file out/.config --disable CONFIG_IPAv2
-          scripts/config --file out/.config --disable CONFIG_BPF_PRELOAD
           
-          # Setup defconfig otomatis
+          # 3. Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
           
-          # Eksekusi compile
+          # 4. Eksekusi compile murni dengan GCC
           make -j$(nproc --all) O=out ARCH=arm64 \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
