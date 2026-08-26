@@ -21,12 +21,12 @@ jobs:
 
       - name: Clone Kernel Source Rova
         run: |
+          # GANTI URL INI KALO LU PAKE REPO LU SENDIRI
           git clone --depth=1 -b tr-4.9-rova https://github.com/Thagoo/platform_kernel_xiaomi_msm8917.git kernel-workspace
 
       - name: Inject KSU-Next
         run: |
           cd kernel-workspace
-          # Suntik KSU-Next otomatis
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
       - name: Compile Kernel
@@ -34,13 +34,16 @@ jobs:
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          make O=out ARCH=arm64 msm8937_defconfig # (Sesuai nama defconfig lu kemaren ya)
+          # PENTING: Ganti "msm8917_defconfig" di bawah pake nama defconfig lu yang bener kemaren!
+          make O=out ARCH=arm64 msm8917_defconfig
           
+          # Hajar compile pake bendera anti-bawel (-w dan -Wno-error)
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          KCFLAGS="-Wno-error"
+          KCFLAGS="-w -Wno-error" \
+          KCPPFLAGS="-w -Wno-error"
 
       - name: Upload Hasil Kernel
         uses: actions/upload-artifact@v4
