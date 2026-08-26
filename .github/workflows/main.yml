@@ -33,8 +33,8 @@ jobs:
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # Defconfig untuk msm8917 / rova (Sesuaikan jika namanya beda di folder arch/arm64/configs)
-          make O=out ARCH=arm64 msm8937_defconfig
+          # Panggil defconfig langsung dari jalurnya yang ada di dalem folder vendor!
+          make O=out ARCH=arm64 vendor/msm8937_defconfig
           
           # Eksekusi compile
           make -j$(nproc --all) O=out ARCH=arm64 \
