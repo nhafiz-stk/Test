@@ -33,16 +33,17 @@ jobs:
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # Panggil defconfig langsung dari jalurnya yang ada di dalem folder vendor!
+          # Panggil defconfig vendor msm8937
           make O=out ARCH=arm64 vendor/msm8937_defconfig
           
-          # Eksekusi compile
+          # Eksekusi compile dengan memaksa LD menggunakan BFD Linker (mencegah bentrok linker modern)
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
+          LD=ld.bfd \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          KCFLAGS="-w" \
-          KCPPFLAGS="-w"
+          KCFLAGS="-w -Wno-error" \
+          KCPPFLAGS="-w -Wno-error"
 
       - name: Upload Hasil Kernel
         uses: actions/upload-artifact@v4
