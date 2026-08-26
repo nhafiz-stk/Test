@@ -41,7 +41,7 @@ jobs:
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
           # Defconfig lu
-          make O=out ARCH=arm64 msm8917_defconfig
+          make O=out ARCH=arm64 msm8937_defconfig
           
           # Hajar build pake Clang + bendera anti-bawel
           make -j$(nproc --all) O=out ARCH=arm64 \
