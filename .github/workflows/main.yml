@@ -13,7 +13,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git ccache automake flex lzop bison \
           build-essential zip curl zlib1g-dev libssl-dev bc \
-          python3 libfl-dev mkbootimg
+          python3 libfl-dev mkbootimg \
+          gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+          gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
 
       - name: Download Toolchain (Proton-Clang)
         run: |
