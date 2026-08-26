@@ -43,11 +43,11 @@ jobs:
           # 3. Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
           
-          # 4. Eksekusi compile murni dengan GCC
+          # 4. Eksekusi compile dengan bendera toleransi maksimal (-fpermissive)
           make -j$(nproc --all) O=out ARCH=arm64 \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          KCFLAGS="-w -Wno-error -fno-pie -fcommon" \
+          KCFLAGS="-w -Wno-error -fno-pie -fcommon -fpermissive" \
           KCPPFLAGS="-w -Wno-error"
 
       - name: Upload Hasil Kernel
