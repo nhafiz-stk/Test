@@ -34,20 +34,32 @@ jobs:
           # Script otomatis untuk integrasi KSU-Next (cek dokumentasi KSU-Next untuk branch yang tepat)
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
+      - name: Inject KSU-Next
+        run: |
+          cd kernel-workspace
+          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+
+      - name: Patch Techpack Audio (Obat Error)
+        run: |
+          cd kernel-workspace
+          # Nyuntik KBUILD_MODNAME ke semua file C di folder audio biar Clang nggak ngamuk
+          find techpack/audio -type f -name "*.c" -exec sed -i '1s/^/#ifndef KBUILD_MODNAME\n#define KBUILD_MODNAME "audio"\n#endif\n/' {} +
+
       - name: Compile Kernel
         run: |
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # GANTI 'msm8937_defconfig' DENGAN NAMA DEFCONFIG KERNEL KAMU!
+          # Defconfig lu
           make O=out ARCH=arm64 msm8937_defconfig
           
-          # Proses Build
+          # Hajar build pake Clang + bendera anti-bawel
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
-          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+          KCFLAGS="-w -Wno-error" \
+          KCPPFLAGS="-w -Wno-error"
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
