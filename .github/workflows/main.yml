@@ -34,7 +34,7 @@ jobs:
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
           # Defconfig untuk msm8917 / rova (Sesuaikan jika namanya beda di folder arch/arm64/configs)
-          make O=out ARCH=arm64 msm8917_defconfig
+          make O=out ARCH=arm64 msm8937_defconfig
           
           # Eksekusi compile
           make -j$(nproc --all) O=out ARCH=arm64 \
