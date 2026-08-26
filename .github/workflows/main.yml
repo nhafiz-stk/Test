@@ -36,11 +36,11 @@ jobs:
           # Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
           
-          # Eksekusi compile pakai GCC bawaan Ubuntu (cross-compiler system)
+          # Eksekusi compile dengan tambahan flag toleransi GCC modern
           make -j$(nproc --all) O=out ARCH=arm64 \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          KCFLAGS="-w -Wno-error" \
+          KCFLAGS="-w -Wno-error -fno-pie -fcommon" \
           KCPPFLAGS="-w -Wno-error"
 
       - name: Upload Hasil Kernel
