@@ -1,4 +1,4 @@
-name: Build Kernel Rova + KSU-Next
+name: Build Kernel Rova Clean + KSU-Next
 
 on:
   workflow_dispatch:
@@ -19,44 +19,33 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/kdrag0n/proton-clang.git toolchain
 
-      - name: Clone Kernel Source Rova
+      - name: Clone Clean Kernel Source
         run: |
-          # GANTI URL INI KALO LU PAKE REPO LU SENDIRI
-          git clone --depth=1 -b tr-4.9-rova https://github.com/Thagoo/platform_kernel_xiaomi_msm8917.git kernel-workspace
+          git clone --depth=1 -b 16.0 https://github.com/crdroidandroid/android_kernel_xiaomi_rova kernel-workspace
 
       - name: Inject KSU-Next
         run: |
           cd kernel-workspace
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
-      - name: Patch Techpack Audio (Obat Error)
-        run: |
-          cd kernel-workspace
-          # Suntik KBUILD_MODNAME (Obat yang tadi)
-          find techpack/audio -type f -name "*.c" -exec sed -i '1s/^/#ifndef KBUILD_MODNAME\n#define KBUILD_MODNAME "audio"\n#endif\n/' {} +
-          
-          # NUKLIR MAKEFILE: Hapus paksa semua bendera -Werror di dalam techpack!
-          find techpack/audio -type f -name "Makefile" -exec sed -i 's/-Werror//g' {} +
-          find techpack/audio -type f -name "Kbuild" -exec sed -i 's/-Werror//g' {} +
-          
       - name: Compile Kernel
         run: |
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # Defconfig lu
-          make O=out ARCH=arm64 msm8937_defconfig
+          # Defconfig untuk msm8917 / rova (Sesuaikan jika namanya beda di folder arch/arm64/configs)
+          make O=out ARCH=arm64 msm8917_defconfig
           
-          # Hajar build pake Clang + bendera anti-bawel
+          # Eksekusi compile
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          KCFLAGS="-w -Wno-error" \
-          KCPPFLAGS="-w -Wno-error"
+          KCFLAGS="-w" \
+          KCPPFLAGS="-w"
 
       - name: Upload Hasil Kernel
         uses: actions/upload-artifact@v4
         with:
-          name: Kernel-Rova-KSUNext
+          name: Kernel-Rova-Clean-KSUNext
           path: kernel-workspace/out/arch/arm64/boot/Image.gz-dtb
