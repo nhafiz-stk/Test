@@ -29,15 +29,21 @@ jobs:
           cd kernel-workspace
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 
+      - name: Patch Techpack Audio (Obat Error)
+        run: |
+          cd kernel-workspace
+          # Nyuntik KBUILD_MODNAME ke semua file C di folder audio biar Clang nggak ngamuk
+          find techpack/audio -type f -name "*.c" -exec sed -i '1s/^/#ifndef KBUILD_MODNAME\n#define KBUILD_MODNAME "audio"\n#endif\n/' {} +
+
       - name: Compile Kernel
         run: |
           cd kernel-workspace
           export PATH=$GITHUB_WORKSPACE/toolchain/bin:$PATH
           
-          # PENTING: Ganti "msm8937_defconfig" di bawah pake nama defconfig lu yang bener kemaren!
-          make O=out ARCH=arm64 msm8937_defconfig
+          # Defconfig lu
+          make O=out ARCH=arm64 msm8917_defconfig
           
-          # Hajar compile pake bendera anti-bawel (-w dan -Wno-error)
+          # Hajar build pake Clang + bendera anti-bawel
           make -j$(nproc --all) O=out ARCH=arm64 \
           CC=clang \
           CROSS_COMPILE=aarch64-linux-gnu- \
