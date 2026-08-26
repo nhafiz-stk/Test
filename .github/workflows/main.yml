@@ -33,10 +33,13 @@ jobs:
           # Panggil defconfig vendor msm8937
           make O=out ARCH=arm64 vendor/msm8937_defconfig
           
+          # MATIKAN FITUR BPF PRELOAD YANG BIKIN ERROR INI!
+          scripts/config --file out/.config --disable CONFIG_BPF_PRELOAD
+          
           # Setup defconfig otomatis
           make O=out ARCH=arm64 olddefconfig
           
-          # Eksekusi compile dengan tambahan flag toleransi GCC modern
+          # Eksekusi compile
           make -j$(nproc --all) O=out ARCH=arm64 \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
