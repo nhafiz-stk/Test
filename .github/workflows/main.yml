@@ -19,8 +19,8 @@ jobs:
 
       - name: Download GCC Toolchain (AArch64 & ARM32)
         run: |
-          git clone --depth=1 https://github.com/akhilnarang/arm64-samsung-android-toolchain.git toolchain-64
-          git clone --depth=1 https://github.com/akhilnarang/arm-eabi-toolchain.git toolchain-32
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git toolchain-64
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git toolchain-32
 
       - name: Clone Clean Kernel Source (crDroid rova)
         run: |
