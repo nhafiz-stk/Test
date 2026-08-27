@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Build Environment
         run: |
@@ -52,7 +52,7 @@ jobs:
           zip -r9 ../MSM8937-KernelSU-Next-Android16.zip * -x .git README.md
 
       - name: Upload Kernel Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MSM8937-KernelSU-Next-Android16
           path: MSM8937-KernelSU-Next-Android16.zip
