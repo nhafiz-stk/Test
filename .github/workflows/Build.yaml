@@ -1,4 +1,4 @@
-namename: Build MSM8937 Kernel with KernelSU
+name: Build MSM8937 Kernel with KernelSU
 
 on:
   workflow_dispatch:
