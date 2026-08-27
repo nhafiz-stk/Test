@@ -1,4 +1,4 @@
-nname: Build MSM8937 Kernel with KernelSU-Next v1.0.8
+name: Build MSM8937 Kernel with KernelSU-Next v1.0.8
 
 on:
   workflow_dispatch:
