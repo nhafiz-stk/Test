@@ -20,10 +20,7 @@ jobs:
         run: |
           mkdir -p toolchain
           cd toolchain
-          # Download Clang 13.0 (r428724) sesuai bawaan kernel kamu
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-13.0.0_r0.1/clang-r428724.tar.gz
-          mkdir clang && tar -xf clang-r428724.tar.gz -C clang
-          # Download GCC Cross Compilers
+          git clone https://gitlab.com/reaper-project/google-clang.git -b clang-r428724 --depth=1 clang
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git --depth=1 gcc32
 
