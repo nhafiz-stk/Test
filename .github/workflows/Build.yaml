@@ -14,14 +14,16 @@ jobs:
       - name: Setup Build Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev bison flex libelf-dev zip ccache git curl
+          sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev bison flex libelf-dev zip ccache git wget
 
       - name: Setup Clang & Toolchains
         run: |
           mkdir -p toolchain
           cd toolchain
           mkdir clang
-          curl -L -s https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-13.0.0_r0.1/clang-r428724.tar.gz | tar -xz -C clang
+          wget -q https://github.com/natsu-kuro/clang-r428724/releases/download/v1.0/clang-r428724.tar.gz -O clang.tar.gz
+          tar -xzf clang.tar.gz -C clang
+          rm clang.tar.gz
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git --depth=1 gcc32
 
