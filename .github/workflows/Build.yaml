@@ -26,21 +26,23 @@ jobs:
           cd toolchain
           git clone https://github.com/kdrag0n/proton-clang.git --depth=1 clang
 
-      - name: Inject KernelSU-Next v1.0.8 & Fix Compiler Check
+      - name: Inject KernelSU-Next v1.0.8 & Patch Compiler Check
         run: |
           cd kernel
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/v1.0.8/kernel/setup.sh" | bash -s v1.0.8
           
-          # Hapus paksa flag -Werror agar kompilasi tidak terhenti karena warning
+          # 1. Hapus paksa flag -Werror
           find . -name "Makefile" -exec sed -i 's/-Werror//g' {} + || true
           find . -name "Kbuild" -exec sed -i 's/-Werror//g' {} + || true
 
+          # 2. Netralkan target prepare-compiler-check di Makefile utama
+          sed -i 's/^prepare-compiler-check:/prepare-compiler-check:\n\t@true/g' Makefile || true
+          sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d' Makefile || true
+
+          # 3. Konfigurasi defconfig
           DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
           echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU=y" >> "$DEFCONFIG"
-
-          # Bypass pemeriksaan stack protector check pada Makefile kernel
-          sed -i 's/prepare-compiler-check prepare-kconfig/prepare-kconfig/g' Makefile || true
 
       - name: Build Kernel Image
         run: |
@@ -65,6 +67,11 @@ jobs:
 
           DEFNAME=$(basename $(find arch/arm64/configs/ -name "*msm8937*" -o -name "*santoni*" | head -n 1))
           make O=out $DEFNAME
+          
+          # Matikan STACKPROTECTOR secara eksplisit pada hasil `.config`
+          sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/# CONFIG_CC_STACKPROTECTOR_STRONG is not set/' out/.config || true
+          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
+          
           make -j$(nproc --all) O=out
 
       - name: Pack AnyKernel3 Zip
