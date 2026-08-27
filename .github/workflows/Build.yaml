@@ -1,4 +1,4 @@
-name: Build MSM8937 Kernel with KernelSU
+namename: Build MSM8937 Kernel with KernelSU
 
 on:
   workflow_dispatch:
@@ -16,11 +16,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev bison flex libelf-dev zip ccache git wget curl
 
-      - name: Clone Open Source Kernel MSM8937 (crDroid/LineageOS Base)
+      - name: Clone Open Source Kernel MSM8937 (Default Branch)
         run: |
-          # Clone source kernel msm8937 langsung dari repo open-source publik
-          git clone https://github.com/mi-msm8937/android_kernel_xiaomi_msm8937.git -b lineage-19.1 --depth=1 kernel
-          
+          # Clone default branch resmi tanpa mengunci nama branch spesifik (Anti-128 error)
+          git clone https://github.com/mi-msm8937/android_kernel_xiaomi_msm8937.git --depth=1 kernel
+
       - name: Setup Clang & Toolchains
         run: |
           mkdir -p toolchain
@@ -37,8 +37,7 @@ jobs:
           curl -LSs "https://raw.githubusercontent.com/twaik/KernelSU/main/kernel/setup.sh" | bash -
           
           # Aktifkan KSU & OverlayFS di defconfig
-          DEFCONFIG="arch/arm64/configs/msm8937_defconfig"
-          [ -f "$DEFCONFIG" ] || DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
+          DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
           echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU=y" >> "$DEFCONFIG"
 
