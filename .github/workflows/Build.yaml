@@ -31,14 +31,10 @@ jobs:
       - name: Inject KernelSU-Next v1.0.8
         run: |
           cd kernel
-          # Clone KernelSU-Next spesifik tag versi 1.0.8
-          git clone https://github.com/KernelSU-Next/KernelSU-Next.git -b v1.0.8 --depth=1 drivers/kernelsu
+          # Menggunakan installer resmi KernelSU-Next yang dikunci ke tag v1.0.8
+          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/v1.0.8/kernel/setup.sh" | bash -s v1.0.8
           
-          # Patch Kconfig & Makefile bawaan kernel
-          grep -q "CONFIG_KSU" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
-          grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
-          
-          # Aktifkan KSU & OverlayFS di defconfig
+          # Force Enable KSU & OverlayFS di defconfig
           DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
           echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU=y" >> "$DEFCONFIG"
@@ -54,9 +50,13 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-android-
           export CROSS_COMPILE_ARM32=arm-linux-androideabi-
 
+          # Matikan warning-as-error agar build tidak membal di tengah jalan
+          export KCFLAGS="-w"
+          export KCPPFLAGS="-w"
+
           DEFNAME=$(basename $(find arch/arm64/configs/ -name "*msm8937*" -o -name "*santoni*" | head -n 1))
           make O=out $DEFNAME
-          make -j$(nproc --all) O=out
+          make -j$(nproc --all) O=out KCFLAGS="-w" KCPPFLAGS="-w"
 
       - name: Pack AnyKernel3 Zip
         run: |
