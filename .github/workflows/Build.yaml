@@ -20,10 +20,9 @@ jobs:
         run: |
           mkdir -p toolchain
           cd toolchain
-          mkdir clang
-          wget -q https://github.com/natsu-kuro/clang-r428724/releases/download/v1.0/clang-r428724.tar.gz -O clang.tar.gz
-          tar -xzf clang.tar.gz -C clang
-          rm clang.tar.gz
+          # Clone Clang 13.0 langsung dari Repo Git resmi (anti-404 / anti-extract error)
+          git clone https://github.com/GreenForce-Project/greenforce_clang-13.0.git --depth=1 clang
+          # Clone GCC Cross Compilers
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git --depth=1 gcc32
 
