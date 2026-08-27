@@ -26,17 +26,21 @@ jobs:
           cd toolchain
           git clone https://github.com/kdrag0n/proton-clang.git --depth=1 clang
 
-      - name: Inject KernelSU-Next v1.0.8 & Patch Camera Drivers
+      - name: Inject KernelSU-Next v1.0.8 & Patch Makefiles
         run: |
           cd kernel
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/v1.0.8/kernel/setup.sh" | bash -s v1.0.8
           
+          # Force Disable -Werror di seluruh Makefile agar tidak membal saat dikompilasi Clang modern
+          find . -name "Makefile" -exec sed -i 's/-Werror//g' {} + || true
+          find . -name "Kbuild" -exec sed -i 's/-Werror//g' {} + || true
+
+          # Inject konfigurasi KSU & Matikan Stack Protector Check yang bikin error
           DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
           echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU=y" >> "$DEFCONFIG"
-
-          # Hapus paksa flag -Werror di seluruh Makefile camera_v2 agar tidak membal saat dikompilasi Clang
-          find drivers/media/platform/msm/camera_v2/ -name "Makefile" -exec sed -i 's/-Werror//g' {} + || true
+          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> "$DEFCONFIG"
+          echo "# CONFIG_CC_STACKPROTECTOR_STRONG is not set" >> "$DEFCONFIG"
 
       - name: Build Kernel Image
         run: |
@@ -51,12 +55,10 @@ jobs:
 
           export HOSTCFLAGS="-O2 -g -fcommon"
           export HOSTCXXFLAGS="-O2 -g -fcommon"
-          export KCFLAGS="-w -Wno-error -fno-integrated-as"
-          export KCPPFLAGS="-w -Wno-error -fno-integrated-as"
 
           DEFNAME=$(basename $(find arch/arm64/configs/ -name "*msm8937*" -o -name "*santoni*" | head -n 1))
           make O=out $DEFNAME
-          make -j2 O=out HOSTCFLAGS="-O2 -g -fcommon" HOSTCXXFLAGS="-O2 -g -fcommon" KCFLAGS="-w -Wno-error -fno-integrated-as" KCPPFLAGS="-w -Wno-error -fno-integrated-as"
+          make -j2 O=out HOSTCFLAGS="-O2 -g -fcommon" HOSTCXXFLAGS="-O2 -g -fcommon"
 
       - name: Pack AnyKernel3 Zip
         run: |
