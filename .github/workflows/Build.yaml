@@ -1,4 +1,4 @@
-name: Build MSM8937 Kernel with KernelSU
+name: Build MSM8937 Kernel with KernelSU-Next v1.0.8
 
 on:
   workflow_dispatch:
@@ -28,13 +28,13 @@ jobs:
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git --depth=1 gcc32
 
-      - name: Inject KernelSU (Manual Git Clone - Anti 404)
+      - name: Inject KernelSU-Next v1.0.8
         run: |
           cd kernel
-          # Clone KernelSU langsung ke drivers/kernelsu (Bebas dari error 404 script curl)
-          git clone https://github.com/twaik/KernelSU.git --depth=1 drivers/kernelsu
+          # Clone KernelSU-Next spesifik tag versi 1.0.8
+          git clone https://github.com/KernelSU-Next/KernelSU-Next.git -b v1.0.8 --depth=1 drivers/kernelsu
           
-          # Patch Kconfig & Makefile
+          # Patch Kconfig & Makefile bawaan kernel
           grep -q "CONFIG_KSU" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
           grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
           
@@ -63,10 +63,10 @@ jobs:
           git clone https://github.com/osm0sis/AnyKernel3.git --depth=1 AK3
           cp kernel/out/arch/arm64/boot/Image.gz-dtb AK3/ || cp kernel/out/arch/arm64/boot/Image.gz AK3/
           cd AK3
-          zip -r9 ../MSM8937-KernelSU-Android16.zip * -x .git README.md
+          zip -r9 ../MSM8937-KernelSU-Next-v1.0.8-Android16.zip * -x .git README.md
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MSM8937-KernelSU-Android16
-          path: MSM8937-KernelSU-Android16.zip
+          name: MSM8937-KernelSU-Next-v1.0.8-Android16
+          path: MSM8937-KernelSU-Next-v1.0.8-Android16.zip
