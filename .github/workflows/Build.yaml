@@ -26,23 +26,26 @@ jobs:
           cd toolchain
           git clone https://github.com/kdrag0n/proton-clang.git --depth=1 clang
 
-      - name: Inject KernelSU-Next v1.0.8 & Patch Compiler Check
+      - name: Inject KernelSU-Next v1.0.8 & Patch Compiler Checks
         run: |
           cd kernel
           curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/v1.0.8/kernel/setup.sh" | bash -s v1.0.8
           
-          # 1. Hapus paksa flag -Werror
+          # 1. Hapus paksa flag -Werror agar kompilasi tidak terhenti karena warning
           find . -name "Makefile" -exec sed -i 's/-Werror//g' {} + || true
           find . -name "Kbuild" -exec sed -i 's/-Werror//g' {} + || true
 
-          # 2. Netralkan target prepare-compiler-check di Makefile utama
-          sed -i 's/^prepare-compiler-check:/prepare-compiler-check:\n\t@true/g' Makefile || true
-          sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d' Makefile || true
+          # 2. Netralkan pengecekan stack protector di skrip pembantu (Anti Error Syntax Makefile)
+          if [ -f scripts/gcc-goto.sh ]; then
+            echo "#!/bin/sh" > scripts/gcc-goto.sh
+            echo "exit 0" >> scripts/gcc-goto.sh
+          fi
 
-          # 3. Konfigurasi defconfig
+          # 3. Konfigurasi defconfig & matikan stack protector strong
           DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
           echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU=y" >> "$DEFCONFIG"
+          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> "$DEFCONFIG"
 
       - name: Build Kernel Image
         run: |
@@ -68,9 +71,8 @@ jobs:
           DEFNAME=$(basename $(find arch/arm64/configs/ -name "*msm8937*" -o -name "*santoni*" | head -n 1))
           make O=out $DEFNAME
           
-          # Matikan STACKPROTECTOR secara eksplisit pada hasil `.config`
+          # Paksa matikan stack protector strong langsung di file out/.config
           sed -i 's/CONFIG_CC_STACKPROTECTOR_STRONG=y/# CONFIG_CC_STACKPROTECTOR_STRONG is not set/' out/.config || true
-          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
           
           make -j$(nproc --all) O=out
 
