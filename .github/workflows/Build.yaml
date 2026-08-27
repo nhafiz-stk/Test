@@ -1,4 +1,4 @@
-name: Build MSM8937 Kernel with KernelSU-Next
+name: Build MSM8937 Kernel with KernelSU
 
 on:
   workflow_dispatch:
@@ -8,47 +8,44 @@ jobs:
     name: Build Kernel
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Workflow Repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Setup Build Environment
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential bc libncurses5-dev libssl-dev bison flex libelf-dev zip ccache git wget curl
 
+      - name: Clone Open Source Kernel MSM8937 (crDroid/LineageOS Base)
+        run: |
+          # Clone source kernel msm8937 langsung dari repo open-source publik
+          git clone https://github.com/mi-msm8937/android_kernel_xiaomi_msm8937.git -b lineage-19.1 --depth=1 kernel
+          
       - name: Setup Clang & Toolchains
         run: |
           mkdir -p toolchain
           cd toolchain
           # Public Open Source Clang dari LineageOS
           git clone https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b.git --depth=1 clang
-          # Cross Compilers GCC Open Source
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git --depth=1 gcc64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git --depth=1 gcc32
 
-      - name: Inject KernelSU-Next (Manual Search & Hook)
+      - name: Inject KernelSU (Lightweight Setup)
         run: |
-          # Cari lokasi folder drivers/ secara presisi di dalam repository
-          KDIR=$(find . -maxdepth 3 -type d -name "drivers" | head -n 1 | xargs dirname)
-          if [ -z "$KDIR" ]; then
-            echo "ERROR: Kernel root directory not found!"
-            exit 1
-          fi
-          echo "Kernel Directory Found at: $KDIR"
-          cd "$KDIR"
+          cd kernel
+          # Setup KSU resmi langsung di root kernel
+          curl -LSs "https://raw.githubusercontent.com/twaik/KernelSU/main/kernel/setup.sh" | bash -
           
-          # Inject source KernelSU-Next manual ke drivers/kernelsu
-          git clone https://github.com/KernelSU-Next/KernelSU-Next.git --depth=1 drivers/kernelsu
-          
-          # Patch drivers/Kconfig & drivers/Makefile secara otomatis
-          grep -q "CONFIG_KSU" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
-          grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
+          # Aktifkan KSU & OverlayFS di defconfig
+          DEFCONFIG="arch/arm64/configs/msm8937_defconfig"
+          [ -f "$DEFCONFIG" ] || DEFCONFIG=$(find arch/arm64/configs/ -name "*defconfig" | head -n 1)
+          echo "CONFIG_OVERLAY_FS=y" >> "$DEFCONFIG"
+          echo "CONFIG_KSU=y" >> "$DEFCONFIG"
 
       - name: Build Kernel Image
         run: |
-          export PATH=$(pwd)/toolchain/clang/bin:$(pwd)/toolchain/gcc64/bin:$(pwd)/toolchain/gcc32/bin:$PATH
+          cd kernel
+          export PATH=$(pwd)/../toolchain/clang/bin:$(pwd)/../toolchain/gcc64/bin:$(pwd)/../toolchain/gcc32/bin:$PATH
           export ARCH=arm64
           export SUBARCH=arm64
           export CC=clang
@@ -56,22 +53,19 @@ jobs:
           export CROSS_COMPILE=aarch64-linux-android-
           export CROSS_COMPILE_ARM32=arm-linux-androideabi-
 
-          # Cari lokasi defconfig dan jalankan make
-          KDIR=$(find . -maxdepth 3 -type d -name "drivers" | head -n 1 | xargs dirname)
-          cd "$KDIR"
-          make O=out msm8937_defconfig
+          DEFNAME=$(basename $(find arch/arm64/configs/ -name "*msm8937*" -o -name "*santoni*" | head -n 1))
+          make O=out $DEFNAME
           make -j$(nproc --all) O=out
 
       - name: Pack AnyKernel3 Zip
         run: |
           git clone https://github.com/osm0sis/AnyKernel3.git --depth=1 AK3
-          IMG_PATH=$(find . -name "Image.gz-dtb" | head -n 1)
-          cp "$IMG_PATH" AK3/
+          cp kernel/out/arch/arm64/boot/Image.gz-dtb AK3/ || cp kernel/out/arch/arm64/boot/Image.gz AK3/
           cd AK3
-          zip -r9 ../MSM8937-KernelSU-Next-Android16.zip * -x .git README.md
+          zip -r9 ../MSM8937-KernelSU-Android16.zip * -x .git README.md
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MSM8937-KernelSU-Next-Android16
-          path: MSM8937-KernelSU-Next-Android16.zip
+          name: MSM8937-KernelSU-Android16
+          path: MSM8937-KernelSU-Android16.zip
